@@ -39,7 +39,7 @@ run-dev: build
 	docker run --rm -it --name docker-drf-service --publish 127.0.0.1:7500:80/tcp \
 		--network drf-dev \
 		--env-file=.env \
-		-v $(CURDIR):/code \
+		-v $(CURDIR)/src:/code \
 		-v docker-drf-root:/root \
 		--entrypoint ${entrypoint} \
 		docker-drf:dev -Wd /code/manage.py runserver 0.0.0.0:80
@@ -48,7 +48,7 @@ run-initial: build
 	docker run --rm -it --name docker-drf-service --publish 127.0.0.1:7500:80/tcp \
 		--network drf-dev \
 		--env-file=.env \
-		-v $(CURDIR):/code \
+		-v $(CURDIR)/src:/code \
 		-v docker-drf-root:/root \
 		--entrypoint run django-admin startproject mysite .
 
@@ -63,7 +63,7 @@ shell-only:
 	docker run -it --rm \
 		--network drf-dev \
 		--env-file=.env \
-		-v $(CURDIR):/code \
+		-v $(CURDIR)/src:/code \
 		-v docker-drf-root:/root \
 		--entrypoint bash \
 		docker-drf:dev

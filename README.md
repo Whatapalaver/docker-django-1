@@ -1,5 +1,8 @@
-Instructions for Bootstrapping a Django App within a Docker environment
-===========================================
+# The Docker rest Framework - Quickstart Tutorial
+
+Testing the API documentation available with old versions of DRF and Django
+
+## Previous Instructions for Bootstrapping a Django App within a Docker environment
 
 *The initial project and was forked from https://github.com/joeymasip/docker-django*
 
@@ -17,6 +20,9 @@ Project
 |     +--Dockerfile
 |     \--requirements.txt
 |
++--src
+|  |
+|  +-temp.txt
 +--.env
 +--.gitignore
 +--docker-compose.yml
@@ -38,23 +44,15 @@ Having setup the django project using the following instructions. You could dele
 - Change PROJECT_NAME in the `.env` file
 - Make sure you modify python version & the requirements.txt for the django dockerfile.
 
-## Create the images
+### Create the images
 
-Run `docker-compose up -d` to create the images and start the containers. Django's container will not start, don't worry.
+- Run `docker-compose up -d` to create the images and start the containers. Django's container will not start, don't worry.
 
-## Create django project
+### Create django project
 
-Run `docker-compose run django django-admin.py startproject project_name .` to create project_name (don't forget the . in the end)
+- Run `docker-compose run django django-admin.py startproject project_name ./src` to create project_name (creating in src to clearly demark the django files)
 
-## Create application
-
-Run `docker-compose run django python manage.py startapp app_name` to create app_name.
-
-## Create the django image
-
-Run `docker-compose up -d` to create the images again, this time, the django container will start.
-
-# How to run
+## How to run
 
 Dependencies:
 
@@ -66,6 +64,7 @@ To run using the Makefile commands
 - first start up the database service running in detached mode with `make postgres-start`
 - then get the django container running with `make run-dev`
 - You can access your application via **`127.0.0.1:7500`**
+- In a separate terminal open a shell with `make shell` and create a new app `./manage.py startapp app_name` and run any migrations with `./manage.py migrate`
 
 ## Hosts within your environment
 
@@ -75,7 +74,6 @@ Service|Hostname |Port number
 -------|---------|-----------
 django |django   |7500
 mysql  |mysql    |8306
-
 
 # Development hints
 
