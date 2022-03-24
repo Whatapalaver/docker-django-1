@@ -1,20 +1,42 @@
-Docker environment for a Django 1.11 project
+Instructions for Bootstrapping a Django App within a Docker environment
 ===========================================
 
-# Add to your project
+*The initial project and was forked from https://github.com/joeymasip/docker-django*
 
-Simply, move these to the root folder in your project:
+The idea of the project is to enable you to bootstrap a django project wholly within Docker. Most instructions demonstrate you setting up your project in your local development environment and then containerising after the event. This requires you to have setup your local developer environment for python and virtual environments and I'd like to avoid that by having everything within a container from the start.
 
-1. The `docker` folder containing python + django and a MySQL container config for it.
-2. The `docker-compose.yml` file
-3. The .env file
+The bootstrapping app looks like this:
 
-**Note:** Change PROJECT_NAME in the `.env` file
+```md
+Project
+|
++--docker
+|  |
+|  +--django
+|     |
+|     +--Dockerfile
+|     \--requirements.txt
+|
++--.env
++--.gitignore
++--docker-compose.yml
++--Dockerfile
++--Makefile
++--README.md
+```
 
-**Note:**: Make sure you modify python version & the requirements.txt for the django dockerfile.
- 
+The files at the root of the project need some explanation:
 
-# How to start django project (if not created)
+- Dockerfile - this is a duplicate but will be used for creating the image for the final django project (referenced from the Makefile commands)
+- docker-compose.yaml - this is required to bootstrap the initial app but from then on I will be orchestrating from the Makefile
+- Makefile - to be used once the django app has been setup
+
+Having setup the django project using the following instructions. You could delete the docker-compose.yaml and the docker folder.
+
+## How to start django project (if not created)
+
+- Change PROJECT_NAME in the `.env` file
+- Make sure you modify python version & the requirements.txt for the django dockerfile.
 
 ## Create the images
 
@@ -39,11 +61,11 @@ Dependencies:
   * Docker engine v1.13 or higher. Your OS provided package might be a little old, if you encounter problems, do upgrade. See [https://docs.docker.com/engine/installation](https://docs.docker.com/engine/installation)
   * Docker compose v1.12 or higher. See [docs.docker.com/compose/install](https://docs.docker.com/compose/install/)
 
-Once you're done, simply `cd` to your project and run `docker-compose up -d`. This will initialise and start all the containers, then leave them running in the background.
+To run using the Makefile commands
 
-## Services exposed outside your environment
-
-You can access your application via **`127.0.0.1:8000`**, if you're running the containers directly.
+- first start up the database service running in detached mode with `make postgres-start`
+- then get the django container running with `make run-dev`
+- You can access your application via **`127.0.0.1:7500`**
 
 ## Hosts within your environment
 
@@ -51,7 +73,7 @@ You'll need to configure your application to use any services you enabled:
 
 Service|Hostname |Port number
 -------|---------|-----------
-django |django   |8000
+django |django   |7500
 mysql  |mysql    |8306
 
 
@@ -77,7 +99,7 @@ INSTALLED_APPS = [
 ```
 
 
-  * Configure your settings.py so your databases point to each database services by service name! For instance, for mySql connections 'HOST': 'mysql'
+  * Configure your settings.py so your databases point to each database services by service name! 
 
 Change:
 ```python
@@ -91,23 +113,21 @@ DATABASES = {
 To
 ```python
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'docker_django_db',
-        'USER': 'dbuser',
-        'PASSWORD': 'dbpw',
-        'HOST': 'mysql',
-        'PORT': '3306',
-        'TEST': {
-            'NAME': 'docker_django_db_test',
-        },
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "docker-drf",
+        "USER": os.getenv("DOCKER_DJANGO_DATABASE_USER"),
+        "PASSWORD": os.getenv("DOCKER_DJANGO_DATABASE_PASSWORD", ""),
+        "HOST": os.getenv("DOCKER_DJANGO_DATABASE_HOST", "localhost"),
+        "PORT": os.getenv("DOCKER_DJANGO_DATABASE_PORT", "5432"),
     }
 }
+
 ```
 
 ## Django migrations:
 
-Type `docker-compose exec django bash` in your bash to enter the python django bash.
+In a separate terminal window, open the shell in your django container `make shell`
 
 Now run the migrations like so
 
@@ -117,20 +137,8 @@ And
 
 `python manage.py migrate`
 
-**Note:** If it's the first time you're running the migrations and your app is not working in your browser, try `docker-compose stop` and `docker-compose up -d` again. This is due to Django trying to execute the app without the ddbb created yet. It should now work.
 
-## PyCharm configuration:
-  * Run `docker-compose up -d` and in **Settings - Project: xxxx - Project interpreter** 
-    * Add remote interpreter (cog)
-      * type: Docker compose
-      * service: django
-  * **Run - Edit configurations** add a new **Django server**:
-    * Host: 0.0.0.0
-    * Port: 8000
-    * Python interpreter: The remote python added in previous step...
-
-
-# Docker compose cheatsheet
+## Docker compose cheatsheet
 
 **Note:** you need to cd first to where your docker-compose.yml file lives.
 
@@ -143,7 +151,7 @@ And
     * Shell into the django container, `docker-compose exec django bash`
     * Open a mysql shell, `docker-compose exec mysql mysql -uroot -pCHOSEN_ROOT_PASSWORD`
 
-# Docker general cheatsheet
+## Docker general cheatsheet
 
 **Note:** these are global commands and you can run them from anywhere.
 

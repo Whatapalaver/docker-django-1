@@ -1,14 +1,18 @@
-FROM python:3.6
+FROM python:3.7-slim-buster
+RUN mkdir /code
+WORKDIR "/code"
 
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONUNBUFFERED=1
 
-RUN mkdir /application
-WORKDIR "/application"
+# install build dependencies
+RUN apt-get update && apt-get install --assume-yes --quiet --no-install-recommends \
+    git \
+    build-essential
 
-# Install python mysql client
-RUN apt-get update \
-    && apt-get -y install libmysqlclient-dev \
-    && apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+# install python dependencies, use latest pip
+COPY requirements.txt /code/
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-ADD requirements.txt /application/
-RUN pip install -r requirements.txt
+# copy everything that needs to be in the image
+COPY . /code/

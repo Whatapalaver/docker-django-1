@@ -1,16 +1,16 @@
 ###############################################################################
 #  In settings.py:
 #       DATABASES = {
-#            'default': {
-#                'ENGINE': 'django.db.backends.mysql',
-#                'HOST': 'mysql',
-#                ...
-#            }
-#        }
+    #     "default": {
+    #         "ENGINE": "django.db.backends.postgresql",
+    #         "NAME": "docker-drf",
+    #         "USER": os.getenv("DOCKER_DJANGO_DATABASE_USER"),
+    #         "PASSWORD": os.getenv("DOCKER_DJANGO_DATABASE_PASSWORD", ""),
+    #         "HOST": os.getenv("DOCKER_DJANGO_DATABASE_HOST", "localhost"),
+    #         "PORT": os.getenv("DOCKER_DJANGO_DATABASE_PORT", "5432"),
+    #     }
+    # }
 #
-#  In PyCharm configurations:
-#       Host: 0.0.0.0 - Port: 8000
-#       Python interpreter: Select the docker ...
 ###############################################################################
 version: "3.1"
 
@@ -22,24 +22,21 @@ services:
     django:
       build: ./docker/django
       container_name: ${PROJECT_NAME}-django
-      command: python3 manage.py runserver 0.0.0.0:8000
+      command: python3 manage.py runserver 0.0.0.0:7400
       volumes:
         - .:/application
       ports:
-        - "8000:8000"
+        - "7400:7400"
       depends_on:
-        - mysql
+        - db
 
-    mysql:
-      image: mysql:5.6
-      container_name: ${PROJECT_NAME}-mysql
-      working_dir: /application
+    db:
+      image: postgres
       volumes:
-        - db-data:/application
+        - db-data:/var/lib/postgresql/data
       environment:
-        - MYSQL_ROOT_PASSWORD=docker_root
-        - MYSQL_DATABASE=docker_django_db
-        - MYSQL_USER=dbuser
-        - MYSQL_PASSWORD=dbpw
+        - POSTGRES_DB=postgres
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
       ports:
         - "8306:3306"
